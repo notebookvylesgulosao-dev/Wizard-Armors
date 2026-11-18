@@ -18,7 +18,15 @@ jobs:
         with:
           gradle-version: 8.12
       - name: Compilar
-        run: gradle build
+        run: |
+          set +e
+          gradle build --console=plain --stacktrace > build.log 2>&1
+          code=$?
+          if [ $code -ne 0 ]; then
+            msg=$(grep -E "error:|What went wrong|Could not|FAILED|symbol:|location:|Execution failed|Caused by" -A1 build.log | head -60 | cut -c1-300 | awk '{printf "%s%%0A",$0}')
+            echo "::error title=Falha do Gradle::$msg"
+          fi
+          exit $code
       - name: Publicar o .jar
         uses: actions/upload-artifact@v4
         with:
