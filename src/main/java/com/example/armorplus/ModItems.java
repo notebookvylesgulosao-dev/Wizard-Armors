@@ -18,13 +18,14 @@ public final class ModItems {
     public static final Item BOOTS  = registerArmor("botas",     EquipmentType.BOOTS);
 
     // Desde a 1.21.2 armaduras são itens comuns com o componente "equippable";
-    // Item.Settings#armor aplica durabilidade, atributos de armadura e encantabilidade.
+    // ArmorMaterial#applySettings aplica durabilidade, atributos de armadura e encantabilidade.
     // Além disso, a registryKey precisa ser definida nas Settings antes de criar o Item.
     private static Item registerArmor(String name, EquipmentType type) {
         RegistryKey<Item> key = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(ArmorPlus.MOD_ID, name));
-        Item item = new Item(new Item.Settings()
-                .armor(ArmorMaterialData.MATERIAL, type)
-                .registryKey(key));
+        Item.Settings settings = ArmorMaterialData.MATERIAL
+                .applySettings(new Item.Settings(), type)
+                .registryKey(key);
+        Item item = new Item(settings);
         return Registry.register(Registries.ITEM, key, item);
     }
 

@@ -27,6 +27,17 @@ jobs:
             echo "::error title=Falha do Gradle::$msg"
           fi
           exit $code
+      - name: Diagnostico da API
+        if: failure()
+        run: |
+          for j in $(find ~/.gradle/caches/fabric-loom -name '*.jar' 2>/dev/null); do
+            if unzip -l "$j" 2>/dev/null | grep -q 'net/minecraft/item/Item\$Settings.class'; then JAR="$j"; break; fi
+          done
+          echo "jar: $JAR"
+          m1=$(javap -cp "$JAR" 'net.minecraft.item.Item$Settings' | grep -iE "armor|registryKey|equippable|maxDamage|attribute" | cut -c1-250 | awk '{printf "%s%%0A",$0}')
+          m2=$(javap -cp "$JAR" net.minecraft.item.equipment.ArmorMaterial | cut -c1-250 | awk '{printf "%s%%0A",$0}')
+          echo "::error title=API Item.Settings::$m1"
+          echo "::error title=API ArmorMaterial::$m2"
       - name: Publicar o .jar
         uses: actions/upload-artifact@v4
         with:
